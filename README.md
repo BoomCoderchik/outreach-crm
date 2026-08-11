@@ -32,6 +32,16 @@ Install the locked dependencies:
 npm ci
 ```
 
+Install the Chromium browser used by the Playwright smoke test:
+
+```sh
+npm run setup:browsers
+```
+
+Run this once after a fresh install, and again when the Playwright version
+changes. The regular quality check does not download browsers or require
+network access.
+
 Start the frontend in development:
 
 ```sh

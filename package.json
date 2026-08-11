@@ -22,6 +22,7 @@
     "test": "npm run test:unit",
     "test:unit": "vitest run",
     "test:e2e": "npm run build && playwright test",
+    "setup:browsers": "playwright install chromium",
     "check": "npm run format:check && npm run typecheck && npm run lint && npm run test:unit && npm run service:build && npm run test:e2e"
   },
   "dependencies": {

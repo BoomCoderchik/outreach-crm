@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   BarChart3,
   ChevronDown,
@@ -47,18 +47,19 @@ const responseMix = [
 function App() {
   const [activeView, setActiveView] = useState<View>('Overview');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const mobileNavTriggerRef = useRef<HTMLButtonElement>(null);
+  const wasMobileNavOpenRef = useRef(false);
 
   useEffect(() => {
-    if (!mobileNavOpen) return;
+    if (mobileNavOpen) {
+      wasMobileNavOpenRef.current = true;
+      return;
+    }
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setMobileNavOpen(false);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    if (wasMobileNavOpenRef.current) {
+      mobileNavTriggerRef.current?.focus();
+      wasMobileNavOpenRef.current = false;
+    }
   }, [mobileNavOpen]);
 
   const navigateFromMobile = (view: View) => {
@@ -68,7 +69,11 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] text-[#152238]">
-      <div className="mx-auto flex min-h-screen max-w-[1560px]">
+      <div
+        id="workspace-shell"
+        inert={mobileNavOpen || undefined}
+        className="mx-auto flex min-h-screen max-w-[1560px]"
+      >
         <aside className="hidden w-[248px] shrink-0 flex-col border-r border-slate-200/80 bg-white px-4 py-5 lg:flex">
           <div className="flex items-center gap-3 px-3">
             <div className="grid size-9 place-items-center rounded-xl bg-[#182b49] text-white shadow-sm">
@@ -155,6 +160,7 @@ function App() {
             <div className="flex items-center gap-3 text-[13px] text-slate-400">
               <button
                 type="button"
+                ref={mobileNavTriggerRef}
                 className="grid size-9 place-items-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-800 lg:hidden"
                 aria-label="Open navigation"
                 aria-expanded={mobileNavOpen}
@@ -186,19 +192,18 @@ function App() {
             </div>
           </header>
 
-          {mobileNavOpen && (
-            <MobileNavigation
-              activeView={activeView}
-              onNavigate={navigateFromMobile}
-              onClose={() => setMobileNavOpen(false)}
-            />
-          )}
-
           <div className="px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
             {activeView === 'Overview' ? <Overview /> : <EmptyView view={activeView} />}
           </div>
         </main>
       </div>
+      {mobileNavOpen && (
+        <MobileNavigation
+          activeView={activeView}
+          onNavigate={navigateFromMobile}
+          onClose={() => setMobileNavOpen(false)}
+        />
+      )}
     </div>
   );
 }
@@ -212,16 +217,52 @@ function MobileNavigation({
   onNavigate: (view: View) => void;
   onClose: () => void;
 }) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+  }, []);
+
   return (
     <div
       role="dialog"
       aria-label="Workspace navigation"
       aria-modal="true"
       className="fixed inset-0 z-50 lg:hidden"
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          onClose();
+          return;
+        }
+
+        if (event.key !== 'Tab') return;
+
+        const focusableElements = Array.from(
+          event.currentTarget.querySelectorAll<HTMLElement>(
+            'button:not([disabled]):not([tabindex="-1"]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          ),
+        ).filter((element) => !element.hasAttribute('aria-hidden'));
+
+        if (focusableElements.length === 0) {
+          event.preventDefault();
+          return;
+        }
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (event.shiftKey && document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        } else if (!event.shiftKey && document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement.focus();
+        }
+      }}
     >
-      <button
-        type="button"
-        aria-label="Close navigation"
+      <div
+        aria-hidden="true"
         className="absolute inset-0 h-full w-full cursor-default bg-slate-950/25"
         onClick={onClose}
       />
@@ -242,7 +283,8 @@ function MobileNavigation({
           </div>
           <button
             type="button"
-            aria-label="Close navigation"
+            ref={closeButtonRef}
+            aria-label="Close navigation drawer"
             className="grid size-9 place-items-center rounded-xl border border-slate-200 text-slate-500"
             onClick={onClose}
           >
