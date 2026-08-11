@@ -1,9 +1,9 @@
 # Outreach CRM
 
 Outreach CRM is a local-first React workspace for organizing outreach projects.
-The public foundation is intentionally small: it provides a responsive
-shadcn-style interface, a browser smoke test, and a boundary for the future
-local TypeScript service.
+The local app provides a responsive shadcn-style interface, private local
+accounts, browser smoke tests, and a TypeScript service for account-scoped
+workspace data.
 
 ## Current status
 
@@ -11,13 +11,13 @@ This repository currently contains:
 
 - a React + TypeScript + Vite frontend;
 - shadcn/ui conventions with copy-ready Spell UI components;
-- a truthful empty workspace state with zero metrics;
-- a minimal local TypeScript service boundary with `GET /health`;
+- a private local account flow with registration, login, logout, and sessions;
+- account-scoped project metadata stored outside Git;
 - formatting, linting, type checking, unit tests, browser smoke tests, and a
   production build.
 
-Authentication, Excel access, Gmail integration, and project persistence are
-intentionally not part of this foundation release.
+Excel access and Gmail integration are intentionally not connected yet. Their
+UI entry points are interactive and explain the next integration step.
 
 ## Requirements
 
@@ -54,6 +54,16 @@ Start the local service boundary separately when needed:
 npm run service:dev
 ```
 
+Run both the frontend and the local service in two terminals:
+
+```sh
+npm run dev
+npm run service:dev
+```
+
+The frontend proxies `/api` requests to the local service during development
+and preview.
+
 The service binds to `127.0.0.1:8787` by default. Its health endpoint is:
 
 ```text
@@ -76,8 +86,15 @@ npm run test:e2e
 
 ## Privacy and local data
 
-The application is designed for local use. Do not commit credentials, tokens,
-client files, databases, environment files, or private product documentation.
+The application is designed for local use. Account records, password hashes,
+sessions, project paths, and future synced outreach data live in the ignored
+`data/` directory. Passwords are never stored in plain text, and session tokens
+are stored on disk only as hashes. Do not commit credentials, tokens, client
+files, databases, environment files, or private product documentation.
+
+Each clone starts with its own empty local data directory. Each person can
+create a separate account, so cloning the repository does not expose another
+user's workspace.
 
 ## License
 
