@@ -3,13 +3,21 @@ import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 
-const WINDOWS_FOLDER_PICKER_SCRIPT = [
-  'Add-Type -AssemblyName System.Windows.Forms',
-  '$dialog = New-Object System.Windows.Forms.FolderBrowserDialog',
-  "$dialog.Description = 'Choose an outreach project folder'",
-  '$dialog.ShowNewFolderButton = $false',
-  'if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { [Console]::Out.Write($dialog.SelectedPath) }',
-].join('; ');
+export function buildWindowsFolderPickerScript() {
+  return [
+    'Add-Type -AssemblyName System.Windows.Forms',
+    '$dialog = New-Object System.Windows.Forms.OpenFileDialog',
+    "$dialog.Title = 'Open'",
+    "$dialog.Filter = 'All files (*.*)|*.*'",
+    '$dialog.ValidateNames = $false',
+    '$dialog.CheckFileExists = $false',
+    '$dialog.CheckPathExists = $true',
+    "$dialog.FileName = 'Select this folder'",
+    'if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { [Console]::Out.Write([System.IO.Path]::GetDirectoryName($dialog.FileName)) }',
+  ].join('; ');
+}
+
+const WINDOWS_FOLDER_PICKER_SCRIPT = buildWindowsFolderPickerScript();
 
 export type FolderPickerProcessResult = {
   exitCode: number;

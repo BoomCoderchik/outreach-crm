@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { createFolderPicker, type FolderPickerProcessResult } from './folder-picker';
+import {
+  buildWindowsFolderPickerScript,
+  createFolderPicker,
+  type FolderPickerProcessResult,
+} from './folder-picker';
 
 function pickerWith(result: FolderPickerProcessResult) {
   return createFolderPicker(async () => result, 'win32');
@@ -14,6 +18,15 @@ describe('native project folder picker', () => {
       kind: 'selected',
       folderPath: 'C:\\Work\\Founder outreach',
     });
+  });
+
+  it('configures the standard Windows open dialog for folder selection', () => {
+    const script = buildWindowsFolderPickerScript();
+
+    expect(script).toContain('System.Windows.Forms.OpenFileDialog');
+    expect(script).toContain('$dialog.ValidateNames = $false');
+    expect(script).toContain('$dialog.CheckFileExists = $false');
+    expect(script).toContain("$dialog.FileName = 'Select this folder'");
   });
 
   it('returns cancellation when the dialog produces no path', async () => {
