@@ -24,6 +24,7 @@
 - Create: `src/lib/project.ts`
 - Create: `src/lib/project.test.ts`
 - Create: `service/src/folder-picker.ts`
+- Create: `service/src/folder-picker.test.ts`
 - Modify: `service/tsconfig.json`
 - Test: `src/lib/project.test.ts`
 
