@@ -1,21 +1,10 @@
-import { createServer } from 'node:http';
-
-import { createHealthResponse } from './health.js';
+import { createServiceServer, resolveServiceHost } from './server.js';
 
 const version = process.env.npm_package_version ?? '0.1.0';
-const host = process.env.HOST ?? '127.0.0.1';
+const host = resolveServiceHost(process.env.HOST, process.env.UNSAFE_ALLOW_NETWORK);
 const port = Number(process.env.PORT ?? 8787);
 
-const server = createServer((request, response) => {
-  if (request.method === 'GET' && request.url === '/health') {
-    response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
-    response.end(JSON.stringify(createHealthResponse(version)));
-    return;
-  }
-
-  response.writeHead(404, { 'content-type': 'application/json; charset=utf-8' });
-  response.end(JSON.stringify({ error: 'Not found' }));
-});
+const server = createServiceServer(version);
 
 server.listen(port, host, () => {
   console.log(`Outreach CRM local service listening on http://${host}:${port}`);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   BarChart3,
   ChevronDown,
@@ -6,11 +6,13 @@ import {
   FolderKanban,
   Inbox,
   LayoutDashboard,
+  Menu,
   Plus,
   Search,
   Settings2,
   SlidersHorizontal,
   Sparkles,
+  X,
 } from 'lucide-react';
 
 import { Badge } from '@/components/badge';
@@ -44,6 +46,25 @@ const responseMix = [
 
 function App() {
   const [activeView, setActiveView] = useState<View>('Overview');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileNavOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [mobileNavOpen]);
+
+  const navigateFromMobile = (view: View) => {
+    setActiveView(view);
+    setMobileNavOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] text-[#152238]">
@@ -73,6 +94,7 @@ function App() {
                   key={label}
                   type="button"
                   onClick={() => setActiveView(label)}
+                  aria-current={activeView === label ? 'page' : undefined}
                   className={cn(
                     'flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[13px] font-medium transition-colors',
                     activeView === label
@@ -96,6 +118,7 @@ function App() {
             <button
               type="button"
               onClick={() => setActiveView('Settings')}
+              aria-current={activeView === 'Settings' ? 'page' : undefined}
               className={cn(
                 'flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[13px] font-medium transition-colors',
                 activeView === 'Settings'
@@ -108,6 +131,9 @@ function App() {
             </button>
             <button
               type="button"
+              disabled
+              aria-disabled="true"
+              title="Help center is not available in foundation mode"
               className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[13px] font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-800"
             >
               <CircleHelp className="size-[17px]" strokeWidth={1.8} />
@@ -126,7 +152,16 @@ function App() {
 
         <main className="min-w-0 flex-1">
           <header className="flex h-[76px] items-center justify-between border-b border-slate-200/75 bg-white/70 px-5 backdrop-blur-sm sm:px-8 lg:px-10">
-            <div className="flex items-center gap-2 text-[13px] text-slate-400">
+            <div className="flex items-center gap-3 text-[13px] text-slate-400">
+              <button
+                type="button"
+                className="grid size-9 place-items-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-800 lg:hidden"
+                aria-label="Open navigation"
+                aria-expanded={mobileNavOpen}
+                onClick={() => setMobileNavOpen(true)}
+              >
+                <Menu className="size-[18px]" strokeWidth={1.8} />
+              </button>
               <span className="hidden sm:inline">Workspace</span>
               <span className="hidden text-slate-300 sm:inline">/</span>
               <span className="font-medium text-slate-700">{activeView}</span>
@@ -151,11 +186,114 @@ function App() {
             </div>
           </header>
 
+          {mobileNavOpen && (
+            <MobileNavigation
+              activeView={activeView}
+              onNavigate={navigateFromMobile}
+              onClose={() => setMobileNavOpen(false)}
+            />
+          )}
+
           <div className="px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
             {activeView === 'Overview' ? <Overview /> : <EmptyView view={activeView} />}
           </div>
         </main>
       </div>
+    </div>
+  );
+}
+
+function MobileNavigation({
+  activeView,
+  onNavigate,
+  onClose,
+}: {
+  activeView: View;
+  onNavigate: (view: View) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      role="dialog"
+      aria-label="Workspace navigation"
+      aria-modal="true"
+      className="fixed inset-0 z-50 lg:hidden"
+    >
+      <button
+        type="button"
+        aria-label="Close navigation"
+        className="absolute inset-0 h-full w-full cursor-default bg-slate-950/25"
+        onClick={onClose}
+      />
+      <aside className="relative flex h-full w-[min(86vw,320px)] flex-col border-r border-slate-200 bg-white px-4 py-5 shadow-2xl">
+        <div className="flex items-center justify-between px-3">
+          <div className="flex items-center gap-3">
+            <div className="grid size-9 place-items-center rounded-xl bg-[#182b49] text-white shadow-sm">
+              <Sparkles className="size-[18px]" strokeWidth={2.25} />
+            </div>
+            <div>
+              <p className="text-[15px] font-semibold tracking-[-0.02em] text-slate-900">
+                outreach
+              </p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-slate-400">
+                workspace
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            aria-label="Close navigation"
+            className="grid size-9 place-items-center rounded-xl border border-slate-200 text-slate-500"
+            onClick={onClose}
+          >
+            <X className="size-[18px]" strokeWidth={1.8} />
+          </button>
+        </div>
+
+        <nav aria-label="Mobile primary navigation" className="mt-10 space-y-1">
+          <p className="px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+            Workspace
+          </p>
+          <div className="mt-3 space-y-1">
+            {navigation.map(({ label, icon: Icon }) => (
+              <button
+                key={label}
+                type="button"
+                aria-current={activeView === label ? 'page' : undefined}
+                onClick={() => onNavigate(label)}
+                className={cn(
+                  'flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[13px] font-medium transition-colors',
+                  activeView === label
+                    ? 'bg-slate-100 text-slate-950'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800',
+                )}
+              >
+                <Icon className="size-[17px]" strokeWidth={1.8} />
+                {label}
+                {label === 'Inbox' && (
+                  <span className="ml-auto rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">
+                    0
+                  </span>
+                )}
+              </button>
+            ))}
+            <button
+              type="button"
+              aria-current={activeView === 'Settings' ? 'page' : undefined}
+              onClick={() => onNavigate('Settings')}
+              className={cn(
+                'flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[13px] font-medium transition-colors',
+                activeView === 'Settings'
+                  ? 'bg-slate-100 text-slate-950'
+                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800',
+              )}
+            >
+              <Settings2 className="size-[17px]" strokeWidth={1.8} />
+              Settings
+            </button>
+          </div>
+        </nav>
+      </aside>
     </div>
   );
 }

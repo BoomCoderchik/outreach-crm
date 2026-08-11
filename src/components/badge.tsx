@@ -1,3 +1,7 @@
+/*
+ * Derived from Spell UI. Copyright (c) 2025 Spell UI.
+ * Licensed under MIT; see THIRD_PARTY_NOTICES.md.
+ */
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react';
 import { Slot } from '@radix-ui/react-slot';

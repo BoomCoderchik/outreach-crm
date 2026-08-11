@@ -1,3 +1,8 @@
+/*
+ * Derived from Spell UI. Copyright (c) 2025 Spell UI.
+ * Licensed under MIT; see THIRD_PARTY_NOTICES.md.
+ */
+
 'use client';
 
 import * as React from 'react';
