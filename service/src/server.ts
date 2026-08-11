@@ -2,6 +2,10 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 
 import { createHealthResponse } from './health.js';
 import {
+  pickProjectFolder as openProjectFolder,
+  type FolderPickerResult,
+} from './folder-picker.js';
+import {
   addProject,
   authenticateUser,
   createSession,
@@ -19,6 +23,10 @@ const LOOPBACK_HOST = '127.0.0.1';
 const JSON_CONTENT_TYPE = 'application/json; charset=utf-8';
 const SESSION_COOKIE = 'outreach_session';
 const MAX_BODY_BYTES = 32_000;
+
+export type ServiceDependencies = {
+  pickProjectFolder?: () => Promise<FolderPickerResult>;
+};
 
 export function resolveServiceHost(
   host: string | undefined,
@@ -82,7 +90,12 @@ function handleAuthFailure(response: ServerResponse) {
   respondJson(response, 401, { error: 'Authentication required' });
 }
 
-async function handleRequest(request: IncomingMessage, response: ServerResponse, version: string) {
+async function handleRequest(
+  request: IncomingMessage,
+  response: ServerResponse,
+  version: string,
+  dependencies: ServiceDependencies,
+) {
   const url = new URL(request.url ?? '/', `http://${LOOPBACK_HOST}`);
 
   if (request.method === 'GET' && url.pathname === '/health') {
@@ -156,6 +169,22 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse,
       return;
     }
 
+    if (request.method === 'POST' && url.pathname === '/api/projects/pick-folder') {
+      try {
+        const selection = await (dependencies.pickProjectFolder ?? openProjectFolder)();
+        respondJson(
+          response,
+          200,
+          selection.kind === 'selected'
+            ? { folderPath: selection.folderPath }
+            : { cancelled: true },
+        );
+      } catch {
+        respondJson(response, 500, { error: 'Could not open the Windows folder picker' });
+      }
+      return;
+    }
+
     if (request.method === 'POST' && url.pathname === '/api/projects') {
       const body = await readBody(request);
       const name = isString(body.name) ? body.name.trim() : '';
@@ -196,8 +225,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse,
   respondJson(response, 404, { error: 'Not found' });
 }
 
-export function createServiceServer(version: string): Server {
+export function createServiceServer(
+  version: string,
+  dependencies: ServiceDependencies = {},
+): Server {
   return createServer((request, response) => {
-    void handleRequest(request, response, version);
+    void handleRequest(request, response, version, dependencies);
   });
 }

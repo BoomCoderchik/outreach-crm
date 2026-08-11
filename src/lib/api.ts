@@ -76,6 +76,10 @@ export const api = {
     request<{ user: User }>('/api/auth/register', { method: 'POST', body: { email, password } }),
   logout: () => request<{ ok: true }>('/api/auth/logout', { method: 'POST' }),
   listProjects: () => request<{ projects: Project[] }>('/api/projects'),
+  pickProjectFolder: () =>
+    request<{ folderPath: string } | { cancelled: true }>('/api/projects/pick-folder', {
+      method: 'POST',
+    }),
   addProject: (name: string, folderPath: string) =>
     request<{ project: Project }>('/api/projects', {
       method: 'POST',
