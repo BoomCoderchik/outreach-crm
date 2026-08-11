@@ -1,0 +1,48 @@
+# Dependencies and build output
+node_modules/
+dist/
+service/dist/
+out/
+coverage/
+.vite/
+playwright-report/
+test-results/
+*.log
+
+# Local runtime data
+data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Secrets and OAuth credentials
+.env
+.env.*
+!.env.example
+credentials.json
+token.json
+*.pem
+*.key
+
+# User project data
+projects.local.json
+clients.xlsx
+clients.csv
+
+# Private product documentation (never publish)
+/PROJECT_CONTEXT.md
+/docs/private/
+/docs/superpowers/
+/.superpowers/
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Worktrees
+.worktrees/
