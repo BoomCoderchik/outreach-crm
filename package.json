@@ -10,10 +10,12 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev.mjs",
+    "dev:frontend": "vite",
+    "dev:service": "tsx service/src/index.ts",
     "build": "vite build",
     "preview": "vite preview",
-    "service:dev": "tsx service/src/index.ts",
+    "service:dev": "npm run dev:service",
     "service:build": "tsc -p service/tsconfig.json",
     "typecheck": "tsc --noEmit && tsc -p service/tsconfig.json --noEmit",
     "lint": "eslint .",

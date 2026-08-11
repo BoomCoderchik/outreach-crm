@@ -42,23 +42,17 @@ Run this once after a fresh install, and again when the Playwright version
 changes. The regular quality check does not download browsers or require
 network access.
 
-Start the frontend in development:
+Start the frontend and local service together:
 
 ```sh
 npm run dev
 ```
 
-Start the local service boundary separately when needed:
+If you need to run them separately, use:
 
 ```sh
-npm run service:dev
-```
-
-Run both the frontend and the local service in two terminals:
-
-```sh
-npm run dev
-npm run service:dev
+npm run dev:frontend
+npm run dev:service
 ```
 
 The frontend proxies `/api` requests to the local service during development

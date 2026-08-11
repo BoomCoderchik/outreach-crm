@@ -71,7 +71,9 @@ function App() {
         setUser(currentUser);
         setSessionState('ready');
       })
-      .catch((error: unknown) => setSessionState(error instanceof ApiError ? 'ready' : 'offline'));
+      .catch((error: unknown) =>
+        setSessionState(error instanceof ApiError && error.status > 0 ? 'ready' : 'offline'),
+      );
   }, []);
 
   useEffect(() => {

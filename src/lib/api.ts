@@ -23,18 +23,38 @@ export class ApiError extends Error {
   }
 }
 
+function serviceErrorMessage(status: number) {
+  if (status === 0 || status === 502 || status === 503 || status === 504) {
+    return 'Local service is unavailable. Start the app with npm run dev.';
+  }
+  if (status >= 500)
+    return 'Local service could not complete the request. Check its terminal output.';
+  return 'Something went wrong';
+}
+
 async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
-  const response = await fetch(path, {
-    ...options,
-    headers: {
-      ...(options.body ? { 'content-type': 'application/json' } : {}),
-      ...options.headers,
-    },
-    body: options.body ? JSON.stringify(options.body) : undefined,
-    credentials: 'include',
-  });
-  const payload = (await response.json().catch(() => ({}))) as { error?: string } & T;
-  if (!response.ok) throw new ApiError(payload.error ?? 'Something went wrong', response.status);
+  let response: Response;
+  try {
+    response = await fetch(path, {
+      ...options,
+      headers: {
+        ...(options.body ? { 'content-type': 'application/json' } : {}),
+        ...options.headers,
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      credentials: 'include',
+    });
+  } catch {
+    throw new ApiError(serviceErrorMessage(0), 0);
+  }
+
+  const contentType = response.headers.get('content-type') ?? '';
+  const payload = contentType.includes('application/json')
+    ? ((await response.json().catch(() => ({}))) as { error?: string } & T)
+    : ({} as { error?: string } & T);
+  if (!response.ok) {
+    throw new ApiError(payload.error ?? serviceErrorMessage(response.status), response.status);
+  }
   return payload;
 }
 
