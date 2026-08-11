@@ -9,5 +9,11 @@
     "rootDir": "src",
     "types": ["node"]
   },
-  "include": ["src/index.ts", "src/health.ts", "src/server.ts", "src/storage.ts"]
+  "include": [
+    "src/index.ts",
+    "src/health.ts",
+    "src/server.ts",
+    "src/storage.ts",
+    "src/folder-picker.ts"
+  ]
 }
