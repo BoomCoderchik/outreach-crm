@@ -1182,11 +1182,20 @@ function ProjectDialog({
           <button type="button" className="secondary-button" onClick={onClose}>
             Cancel
           </button>
-          <button type="button" disabled={busy || picking} className="secondary-button" onClick={chooseFolder}>
+          <button
+            type="button"
+            disabled={busy || picking}
+            className="secondary-button"
+            onClick={chooseFolder}
+          >
             <FolderOpen className="size-4" />
             {picking ? 'Choosing…' : 'Choose folder'}
           </button>
-          <button type="submit" disabled={busy || picking || !folderPath || !name} className="primary-button">
+          <button
+            type="submit"
+            disabled={busy || picking || !folderPath || !name}
+            className="primary-button"
+          >
             {busy ? 'Saving…' : 'Save project'}
             <ArrowRight className="size-4" />
           </button>

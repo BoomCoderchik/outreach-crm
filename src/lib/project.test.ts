@@ -8,9 +8,7 @@ describe('getProjectNameFromFolderPath', () => {
   });
 
   it('ignores trailing separators', () => {
-    expect(getProjectNameFromFolderPath('C:\\Work\\Founder outreach\\')).toBe(
-      'Founder outreach',
-    );
+    expect(getProjectNameFromFolderPath('C:\\Work\\Founder outreach\\')).toBe('Founder outreach');
   });
 
   it('returns an empty name for a root path', () => {

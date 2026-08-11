@@ -33,20 +33,19 @@ async function requestJson(
   path: string,
   options: { method?: 'GET' | 'POST'; body?: unknown; cookie?: string } = {},
 ) {
-  return new Promise<HttpResponse>(
-    (resolve, reject) => {
-      const httpRequest = request(
-        {
-          host: '127.0.0.1',
-          port,
-          path,
-          method: options.method ?? 'GET',
-          headers: {
-            ...(options.body ? { 'content-type': 'application/json' } : {}),
-            ...(options.cookie ? { cookie: options.cookie } : {}),
-          },
+  return new Promise<HttpResponse>((resolve, reject) => {
+    const httpRequest = request(
+      {
+        host: '127.0.0.1',
+        port,
+        path,
+        method: options.method ?? 'GET',
+        headers: {
+          ...(options.body ? { 'content-type': 'application/json' } : {}),
+          ...(options.cookie ? { cookie: options.cookie } : {}),
         },
-        (response) => {
+      },
+      (response) => {
         const chunks: Buffer[] = [];
         response.on('data', (chunk: Buffer) => chunks.push(chunk));
         response.on('end', () => {
@@ -57,13 +56,12 @@ async function requestJson(
             setCookie: response.headers['set-cookie']?.[0],
           });
         });
-        },
-      );
-      httpRequest.on('error', reject);
-      if (options.body) httpRequest.write(JSON.stringify(options.body));
-      httpRequest.end();
-    },
-  );
+      },
+    );
+    httpRequest.on('error', reject);
+    if (options.body) httpRequest.write(JSON.stringify(options.body));
+    httpRequest.end();
+  });
 }
 
 describe('local service HTTP contract', () => {

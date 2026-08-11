@@ -23,18 +23,18 @@ describe('native project folder picker', () => {
   });
 
   it('rejects on unsupported platforms', async () => {
-    const pickFolder = createFolderPicker(async () => ({ exitCode: 0, stdout: 'ignored' }), 'linux');
+    const pickFolder = createFolderPicker(
+      async () => ({ exitCode: 0, stdout: 'ignored' }),
+      'linux',
+    );
 
     await expect(pickFolder()).rejects.toThrow('only supported on Windows');
   });
 
   it('turns picker process failures into a user-facing error', async () => {
-    const pickFolder = createFolderPicker(
-      async () => {
-        throw new Error('powershell failed');
-      },
-      'win32',
-    );
+    const pickFolder = createFolderPicker(async () => {
+      throw new Error('powershell failed');
+    }, 'win32');
 
     await expect(pickFolder()).rejects.toThrow('Could not open the Windows folder picker');
   });

@@ -1,7 +1,10 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 
 import { createHealthResponse } from './health.js';
-import { pickProjectFolder as openProjectFolder, type FolderPickerResult } from './folder-picker.js';
+import {
+  pickProjectFolder as openProjectFolder,
+  type FolderPickerResult,
+} from './folder-picker.js';
 import {
   addProject,
   authenticateUser,
@@ -222,7 +225,10 @@ async function handleRequest(
   respondJson(response, 404, { error: 'Not found' });
 }
 
-export function createServiceServer(version: string, dependencies: ServiceDependencies = {}): Server {
+export function createServiceServer(
+  version: string,
+  dependencies: ServiceDependencies = {},
+): Server {
   return createServer((request, response) => {
     void handleRequest(request, response, version, dependencies);
   });

@@ -5,10 +5,10 @@ const execFileAsync = promisify(execFile);
 
 const WINDOWS_FOLDER_PICKER_SCRIPT = [
   'Add-Type -AssemblyName System.Windows.Forms',
-  "$dialog = New-Object System.Windows.Forms.FolderBrowserDialog",
+  '$dialog = New-Object System.Windows.Forms.FolderBrowserDialog',
   "$dialog.Description = 'Choose an outreach project folder'",
   '$dialog.ShowNewFolderButton = $false',
-  "if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { [Console]::Out.Write($dialog.SelectedPath) }",
+  'if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { [Console]::Out.Write($dialog.SelectedPath) }',
 ].join('; ');
 
 export type FolderPickerProcessResult = {
@@ -54,8 +54,6 @@ export function createFolderPicker(
   };
 }
 
-export type FolderPickerResult =
-  | { kind: 'selected'; folderPath: string }
-  | { kind: 'cancelled' };
+export type FolderPickerResult = { kind: 'selected'; folderPath: string } | { kind: 'cancelled' };
 
 export const pickProjectFolder = createFolderPicker();
