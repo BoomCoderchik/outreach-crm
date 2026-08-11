@@ -34,4 +34,22 @@ describe('local API error handling', () => {
       }),
     );
   });
+
+  it('explains when the development proxy cannot reach the local service', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response('Proxy error', {
+          status: 500,
+          headers: { 'content-type': 'text/plain' },
+        }),
+      ),
+    );
+
+    await expect(api.register('person@example.com', 'password123')).rejects.toMatchObject({
+      name: 'ApiError',
+      status: 500,
+      message: 'Local service is unavailable. Start the app with npm run dev.',
+    });
+  });
 });

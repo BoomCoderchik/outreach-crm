@@ -23,8 +23,14 @@ export class ApiError extends Error {
   }
 }
 
-function serviceErrorMessage(status: number) {
-  if (status === 0 || status === 502 || status === 503 || status === 504) {
+function serviceErrorMessage(status: number, hasJsonPayload = true) {
+  if (
+    status === 0 ||
+    status === 502 ||
+    status === 503 ||
+    status === 504 ||
+    (status === 500 && !hasJsonPayload)
+  ) {
     return 'Local service is unavailable. Start the app with npm run dev.';
   }
   if (status >= 500)
@@ -53,7 +59,11 @@ async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
     ? ((await response.json().catch(() => ({}))) as { error?: string } & T)
     : ({} as { error?: string } & T);
   if (!response.ok) {
-    throw new ApiError(payload.error ?? serviceErrorMessage(response.status), response.status);
+    throw new ApiError(
+      payload.error ??
+        serviceErrorMessage(response.status, contentType.includes('application/json')),
+      response.status,
+    );
   }
   return payload;
 }
