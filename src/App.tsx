@@ -48,6 +48,7 @@ function App() {
   const [activeView, setActiveView] = useState<View>('Overview');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const mobileNavTriggerRef = useRef<HTMLButtonElement>(null);
+  const desktopNavRef = useRef<HTMLButtonElement>(null);
   const wasMobileNavOpenRef = useRef(false);
 
   useEffect(() => {
@@ -57,10 +58,25 @@ function App() {
     }
 
     if (wasMobileNavOpenRef.current) {
-      mobileNavTriggerRef.current?.focus();
+      const mobileNavTrigger = mobileNavTriggerRef.current;
+      if (mobileNavTrigger && mobileNavTrigger.getClientRects().length > 0) {
+        mobileNavTrigger.focus();
+      } else {
+        desktopNavRef.current?.focus();
+      }
       wasMobileNavOpenRef.current = false;
     }
   }, [mobileNavOpen]);
+
+  useEffect(() => {
+    const desktopBreakpoint = window.matchMedia('(min-width: 1024px)');
+    const handleBreakpointChange = (event: MediaQueryListEvent) => {
+      if (event.matches) setMobileNavOpen(false);
+    };
+
+    desktopBreakpoint.addEventListener('change', handleBreakpointChange);
+    return () => desktopBreakpoint.removeEventListener('change', handleBreakpointChange);
+  }, []);
 
   const navigateFromMobile = (view: View) => {
     setActiveView(view);
@@ -98,6 +114,7 @@ function App() {
                 <button
                   key={label}
                   type="button"
+                  ref={label === 'Overview' ? desktopNavRef : undefined}
                   onClick={() => setActiveView(label)}
                   aria-current={activeView === label ? 'page' : undefined}
                   className={cn(

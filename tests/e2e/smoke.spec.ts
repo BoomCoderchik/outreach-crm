@@ -59,4 +59,29 @@ test.describe('mobile navigation', () => {
     await expect(drawer).toBeHidden();
     await expect(trigger).toBeFocused();
   });
+
+  test('closes the drawer when the viewport crosses into the desktop breakpoint', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    await page.getByRole('button', { name: 'Open navigation' }).click();
+    const drawer = page.getByRole('dialog', { name: 'Workspace navigation' });
+    const shell = page.locator('#workspace-shell');
+    await expect(drawer).toBeVisible();
+    await expect(shell).toHaveAttribute('inert');
+
+    await page.setViewportSize({ width: 1280, height: 844 });
+
+    const desktopNavigation = page.getByRole('navigation', { name: 'Primary navigation' });
+    await expect(desktopNavigation).toBeVisible();
+    await expect(drawer).toBeHidden();
+    await expect(shell).not.toHaveAttribute('inert');
+    await expect(
+      desktopNavigation.getByRole('button', { name: 'Overview', exact: true }),
+    ).toBeFocused();
+
+    await desktopNavigation.getByRole('button', { name: 'Projects', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Projects' })).toBeVisible();
+  });
 });
