@@ -25,10 +25,20 @@ test('connects a project, searches it, and keeps it after a reload', async ({ pa
   await page.goto('/');
   await createAccount(page);
 
+  await page.route('**/api/projects/pick-folder', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ folderPath: 'C:\\Work\\Founder outreach' }),
+    });
+  });
   await page.getByRole('button', { name: 'Connect project', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Connect a project' })).toBeVisible();
-  await page.getByLabel('Project name').fill('Founder outreach');
-  await page.getByLabel('Folder path').fill('C:\\Work\\Founder outreach');
+  await expect(page.getByLabel('Project name')).toHaveAttribute('readonly', '');
+  await expect(page.getByLabel('Folder path')).toHaveAttribute('readonly', '');
+  await page.getByRole('button', { name: 'Choose folder', exact: true }).click();
+  await expect(page.getByLabel('Project name')).toHaveValue('Founder outreach');
+  await expect(page.getByLabel('Folder path')).toHaveValue('C:\\Work\\Founder outreach');
   await page.getByRole('button', { name: 'Save project', exact: true }).click();
   await expect(page.getByText('Founder outreach', { exact: true })).toBeVisible();
 
@@ -54,11 +64,17 @@ test('supports sign out and sign in with the same local account', async ({ page 
 test('keeps projects isolated between local accounts', async ({ page }) => {
   await page.goto('/');
   await createAccount(page);
+  await page.route('**/api/projects/pick-folder', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ folderPath: 'C:\\Private' }),
+    });
+  });
   await page.getByRole('button', { name: 'Connect project', exact: true }).click();
-  await page.getByLabel('Project name').fill('Private project');
-  await page.getByLabel('Folder path').fill('C:\\Private');
+  await page.getByRole('button', { name: 'Choose folder', exact: true }).click();
   await page.getByRole('button', { name: 'Save project', exact: true }).click();
-  await expect(page.getByText('Private project', { exact: true })).toBeVisible();
+  await expect(page.getByText('Private', { exact: true })).toBeVisible();
 
   await page.getByRole('button', { name: 'Sign out' }).click();
   await page.getByRole('button', { name: /New here\?/ }).click();

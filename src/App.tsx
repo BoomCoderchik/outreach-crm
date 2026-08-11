@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   CircleHelp,
   FolderKanban,
+  FolderOpen,
   Inbox,
   LayoutDashboard,
   LockKeyhole,
@@ -26,6 +27,7 @@ import { Badge } from '@/components/badge';
 import { Chart } from '@/components/chart';
 import FallbackAvatar from '@/components/fallback-avatar';
 import { ApiError, api, type Project, type User } from '@/lib/api';
+import { getProjectNameFromFolderPath } from '@/lib/project';
 import { cn } from '@/lib/utils';
 
 type View = 'Overview' | 'Projects' | 'Inbox' | 'Settings';
@@ -1110,8 +1112,29 @@ function ProjectDialog({
   const [folderPath, setFolderPath] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [picking, setPicking] = useState(false);
+
+  const chooseFolder = async () => {
+    setPicking(true);
+    setError('');
+    try {
+      const result = await api.pickProjectFolder();
+      if ('folderPath' in result) {
+        setFolderPath(result.folderPath);
+        setName(getProjectNameFromFolderPath(result.folderPath));
+      }
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error ? requestError.message : 'Could not choose a project folder',
+      );
+    } finally {
+      setPicking(false);
+    }
+  };
+
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!folderPath || !name) return;
     setBusy(true);
     setError('');
     try {
@@ -1134,9 +1157,9 @@ function ProjectDialog({
           Project name
           <input
             required
+            readOnly
             value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Q3 founders outreach"
+            placeholder="Choose a folder first"
             className="field-input"
           />
         </label>
@@ -1144,9 +1167,9 @@ function ProjectDialog({
           Folder path
           <input
             required
+            readOnly
             value={folderPath}
-            onChange={(event) => setFolderPath(event.target.value)}
-            placeholder="C:\\Work\\Outreach\\Q3"
+            placeholder="No folder selected"
             className="field-input"
           />
         </label>
@@ -1159,7 +1182,11 @@ function ProjectDialog({
           <button type="button" className="secondary-button" onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" disabled={busy} className="primary-button">
+          <button type="button" disabled={busy || picking} className="secondary-button" onClick={chooseFolder}>
+            <FolderOpen className="size-4" />
+            {picking ? 'Choosing…' : 'Choose folder'}
+          </button>
+          <button type="submit" disabled={busy || picking || !folderPath || !name} className="primary-button">
             {busy ? 'Saving…' : 'Save project'}
             <ArrowRight className="size-4" />
           </button>
