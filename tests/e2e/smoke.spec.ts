@@ -133,4 +133,25 @@ test.describe('mobile navigation', () => {
     await expect(drawer).toBeHidden();
     await expect(trigger).toBeFocused();
   });
+
+  test('keeps the project picker dialog usable on a narrow screen', async ({ page }) => {
+    await page.goto('/');
+    await createAccount(page);
+    await page.route('**/api/projects/pick-folder', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ folderPath: 'C:\\Mobile project' }),
+      });
+    });
+
+    await page.getByRole('button', { name: 'Connect project', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Connect a project' });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: 'Choose folder', exact: true }).click();
+    await expect(dialog.getByLabel('Project name')).toHaveValue('Mobile project');
+    await expect(dialog.getByLabel('Folder path')).toHaveValue('C:\\Mobile project');
+    await dialog.getByRole('button', { name: 'Save project', exact: true }).click();
+    await expect(page.getByText('Mobile project', { exact: true })).toBeVisible();
+  });
 });
