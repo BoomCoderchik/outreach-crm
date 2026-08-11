@@ -23,10 +23,10 @@ describe('native project folder picker', () => {
   it('configures the standard Windows open dialog for folder selection', () => {
     const script = buildWindowsFolderPickerScript();
 
-    expect(script).toContain('System.Windows.Forms.OpenFileDialog');
-    expect(script).toContain('$dialog.ValidateNames = $false');
-    expect(script).toContain('$dialog.CheckFileExists = $false');
-    expect(script).toContain("$dialog.FileName = 'Select this folder'");
+    expect(script).toContain('IFileDialog');
+    expect(script).toContain('FOS_PICKFOLDERS');
+    expect(script).toContain('GetResult');
+    expect(script).not.toContain('Select this folder');
   });
 
   it('returns cancellation when the dialog produces no path', async () => {
